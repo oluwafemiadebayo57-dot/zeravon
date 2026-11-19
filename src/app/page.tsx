@@ -7,75 +7,54 @@ import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 import { Service, SiteSettings } from "@/lib/types";
 import LeadForm from "@/components/LeadForm";
 
+// Define defaults OUTSIDE the component so they are available instantly
+const defaultSettings: SiteSettings = {
+  heroHeading: "We Scale Brands with High-Converting Social Media.",
+  heroSubheading: "Stop blending in. Our bold strategies and data-driven management turn your social presence into a revenue engine.",
+  aboutText: "",
+  contactEmail: "",
+  contactPhone: "",
+  calendlyLink: "",
+};
+
+const fallbackServices: Service[] = [
+  { name: "Full Account Management", description: "End-to-end strategy, posting, and community engagement to build a loyal following.", price: "From $2,500/mo", features: ["Daily Posting", "Community Mgmt", "Monthly Strategy"], imageUrl: "" },
+  { name: "Content Creation", description: "High-end graphics, short-form video, and copywriting that stops the scroll.", price: "From $1,500/mo", features: ["10 Reels/mo", "Graphic Design", "Copywriting"], imageUrl: "" },
+  { name: "Paid Ads", description: "Data-driven ad campaigns that turn followers into paying customers.", price: "From $1,000/mo", features: ["Meta Ads", "TikTok Ads", "A/B Testing"], imageUrl: "" },
+];
+
 export default function Home() {
-  const [services, setServices] = useState<Service[]>([]);
-  const [settings, setSettings] = useState<SiteSettings | null>(null);
-  const [loading, setLoading] = useState(true);
-  
-  // NEW: State to track which package the user clicked
+  // Initialize state with the default data immediately
+  const [services, setServices] = useState<Service[]>(fallbackServices);
+  const [settings, setSettings] = useState<SiteSettings>(defaultSettings);
   const [selectedService, setSelectedService] = useState(""); 
-
-  const defaultSettings: SiteSettings = {
-    heroHeading: "We Scale Brands with High-Converting Social Media.",
-    heroSubheading: "Stop blending in. Our bold strategies and data-driven management turn your social presence into a revenue engine.",
-    aboutText: "",
-    contactEmail: "",
-    contactPhone: "",
-    calendlyLink: "",
-  };
-
-  const fallbackServices = [
-    { name: "Full Account Management", description: "End-to-end strategy, posting, and community engagement to build a loyal following.", price: "From $2,500/mo", features: ["Daily Posting", "Community Mgmt", "Monthly Strategy"], imageUrl: "" },
-    { name: "Content Creation", description: "High-end graphics, short-form video, and copywriting that stops the scroll.", price: "From $1,500/mo", features: ["10 Reels/mo", "Graphic Design", "Copywriting"], imageUrl: "" },
-    { name: "Paid Ads", description: "Data-driven ad campaigns that turn followers into paying customers.", price: "From $1,000/mo", features: ["Meta Ads", "TikTok Ads", "A/B Testing"], imageUrl: "" },
-  ];
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 3000));
+        // Fetch real services and settings in the background
+        const servicesSnap = await getDocs(collection(db, "services"));
+        const servicesData = servicesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Service[];
+        if (servicesData.length > 0) setServices(servicesData);
 
-        await Promise.race([
-          (async () => {
-            const servicesSnap = await getDocs(collection(db, "services"));
-            const servicesData = servicesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Service[];
-            
-            if (servicesData.length > 0) {
-              setServices(servicesData);
-            } else {
-              setServices(fallbackServices);
-            }
-
-            const settingsSnap = await getDoc(doc(db, "settings", "main"));
-            if (settingsSnap.exists()) {
-              setSettings(settingsSnap.data() as SiteSettings);
-            } else {
-              setSettings(defaultSettings);
-            }
-          })(),
-          timeout
-        ]);
+        const settingsSnap = await getDoc(doc(db, "settings", "main"));
+        if (settingsSnap.exists()) {
+          setSettings(settingsSnap.data() as SiteSettings);
+        }
       } catch (error) {
         console.warn("Using fallback data due to connection issue:", error);
-        setServices(fallbackServices);
-        setSettings(defaultSettings);
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchData();
   }, []);
 
-  // NEW: Function to handle clicking a package
   const handleSelectService = (serviceName: string) => {
     setSelectedService(serviceName);
-    // Smooth scroll to the form
     document.getElementById("audit")?.scrollIntoView({ behavior: "smooth" });
   };
 
-  if (loading || !settings) return <div style={{ padding: "100px", textAlign: "center", fontFamily: "var(--font-heading)" }}>Loading...</div>;
-
+  // NO LOADING SCREEN! It renders instantly.
   return (
     <>
       {/* --- HERO SECTION --- */}
@@ -130,7 +109,6 @@ export default function Home() {
                 <div style={{ fontSize: "1.5rem", fontWeight: 700, fontFamily: "var(--font-heading)", color: "var(--secondary)", marginBottom: "20px" }}>
                   {service.price}
                 </div>
-                {/* CHANGED: Button triggers handleSelectService */}
                 <button 
                   onClick={() => handleSelectService(service.name)}
                   className="btn-secondary btn-mobile-full" 
@@ -170,7 +148,6 @@ export default function Home() {
             </div>
 
             <div style={{ flex: "1 1 400px" }}>
-              {/* CHANGED: Pass the selected service to the form */}
               <LeadForm selectedService={selectedService} />
             </div>
 

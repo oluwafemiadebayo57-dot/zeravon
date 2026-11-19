@@ -7,46 +7,30 @@ import { collection, getDocs } from "firebase/firestore";
 import { Service } from "@/lib/types";
 import Link from "next/link";
 
-export default function ServicesPage() {
-  const [services, setServices] = useState<Service[]>([]);
-  const [loading, setLoading] = useState(true);
+const fallbackServices: Service[] = [
+  { name: "Full Account Management", description: "End-to-end strategy, posting, and community engagement to build a loyal following.", price: "From $2,500/mo", features: ["Daily Posting", "Community Mgmt", "Monthly Strategy"], imageUrl: "" },
+  { name: "Content Creation", description: "High-end graphics, short-form video, and copywriting that stops the scroll.", price: "From $1,500/mo", features: ["10 Reels/mo", "Graphic Design", "Copywriting"], imageUrl: "" },
+  { name: "Paid Ads", description: "Data-driven ad campaigns that turn followers into paying customers.", price: "From $1,000/mo", features: ["Meta Ads", "TikTok Ads", "A/B Testing"], imageUrl: "" },
+];
 
-  const fallbackServices = [
-    { name: "Full Account Management", description: "End-to-end strategy, posting, and community engagement to build a loyal following.", price: "From $2,500/mo", features: ["Daily Posting", "Community Mgmt", "Monthly Strategy"], imageUrl: "" },
-    { name: "Content Creation", description: "High-end graphics, short-form video, and copywriting that stops the scroll.", price: "From $1,500/mo", features: ["10 Reels/mo", "Graphic Design", "Copywriting"], imageUrl: "" },
-    { name: "Paid Ads", description: "Data-driven ad campaigns that turn followers into paying customers.", price: "From $1,000/mo", features: ["Meta Ads", "TikTok Ads", "A/B Testing"], imageUrl: "" },
-  ];
+export default function ServicesPage() {
+  const [services, setServices] = useState<Service[]>(fallbackServices);
 
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        // Add a timeout just in case Firebase is slow
-        const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 3000));
-        
-        await Promise.race([
-          (async () => {
-            const querySnapshot = await getDocs(collection(db, "services"));
-            const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Service[];
-            if (data.length > 0) setServices(data);
-            else setServices(fallbackServices);
-          })(),
-          timeout
-        ]);
+        const querySnapshot = await getDocs(collection(db, "services"));
+        const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Service[];
+        if (data.length > 0) setServices(data);
       } catch (error) {
         console.warn("Using fallback services due to connection issue.");
-        setServices(fallbackServices);
-      } finally {
-        setLoading(false);
       }
     };
     fetchServices();
   }, []);
 
-  if (loading) return <div style={{ minHeight: "80vh", display: "flex", justifyContent: "center", alignItems: "center", fontFamily: "var(--font-heading)", fontSize: "1.5rem" }}>Loading Services...</div>;
-
   return (
     <>
-      {/* Page Hero */}
       <section style={{ backgroundColor: "var(--secondary)", color: "white", padding: "80px 0", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: "-20%", right: "-10%", width: "400px", height: "400px", background: "var(--primary)", filter: "blur(150px)", opacity: 0.15, borderRadius: "50%", pointerEvents: "none" }}></div>
         
@@ -60,7 +44,6 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* Services Grid */}
       <section className="section-padding" style={{ backgroundColor: "var(--bg-light)" }}>
         <div className="container">
           <div className="services-grid">
