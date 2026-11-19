@@ -1,10 +1,6 @@
 // src/lib/firebase.ts
 import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
-import {
-  initializeFirestore,
-  getFirestore,
-  Firestore,
-} from "firebase/firestore";
+import { initializeFirestore, getFirestore, Firestore } from "firebase/firestore";
 import { getAuth, Auth } from "firebase/auth";
 
 const firebaseConfig = {
@@ -17,26 +13,18 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// Singleton pattern — prevents "duplicate-app" during Next.js hot reload
 const app: FirebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-// --- Firestore ---
-// MUST use initializeFirestore with long-polling to avoid the
-// "Could not reach Cloud Firestore backend" error in Next.js.
-// `useFetchStreams: false` further stabilizes the connection in dev.
 let db: Firestore;
 try {
   db = initializeFirestore(app, {
-    experimentalForceLongPolling: true,
-    useFetchStreams: false,
+    // REMOVED useFetchStreams: false
+    experimentalForceLongPolling: true, 
   });
 } catch (error) {
-  // initializeFirestore throws if already called (hot reload);
-  // fall back to the existing instance.
   db = getFirestore(app);
 }
 
-// --- Auth ---
 const auth: Auth = getAuth(app);
 
 export { app, db, auth };

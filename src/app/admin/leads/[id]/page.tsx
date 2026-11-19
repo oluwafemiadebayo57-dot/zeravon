@@ -99,9 +99,9 @@ export default function AuditEditor({ params }: { params: Promise<{ id: string }
 
       alert("Proposal sent successfully!");
       
-      // FORCED TYPE CAST TO FIX RED LINE
       if (lead) {
-        setLead({ ...lead, status: "Proposal Sent", proposalLink } as Lead);
+        // Force TypeScript to accept the new object
+        setLead({ ...lead, status: "Proposal Sent", proposalLink } as unknown as Lead);
       }
       
     } catch (error) {

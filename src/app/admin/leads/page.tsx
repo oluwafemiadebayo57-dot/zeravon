@@ -7,16 +7,13 @@ import { collection, getDocs, doc, updateDoc, query, orderBy } from "firebase/fi
 import { Lead } from "@/lib/types";
 import Link from "next/link";
 
-const getStatusStyle = (status: Lead["status"]) => {
-  switch (status) {
-    case "New": return { bg: "#FEF08A", color: "#854D0E" };
-    case "Audit Sent": return { bg: "#DBEAFE", color: "#1E40AF" };
-    case "Call Booked": return { bg: "#E0E7FF", color: "#3730A3" };
-    case "Proposal Sent": return { bg: "#F3E8FF", color: "#6B21A8" };
-    case "Won": return { bg: "#D1FAE5", color: "#065F46" };
-    case "Lost": return { bg: "#F3F4F6", color: "#374151" };
-    default: return { bg: "#F3F4F6", color: "#374151" };
-  }
+const statusStyles: Record<Lead["status"], { bg: string; color: string }> = {
+  "New": { bg: "#FEF08A", color: "#854D0E" },
+  "Audit Sent": { bg: "#DBEAFE", color: "#1E40AF" },
+  "Call Booked": { bg: "#E0E7FF", color: "#3730A3" },
+  "Proposal Sent": { bg: "#F3E8FF", color: "#6B21A8" },
+  "Won": { bg: "#D1FAE5", color: "#065F46" },
+  "Lost": { bg: "#F3F4F6", color: "#374151" }
 };
 
 export default function LeadsPage() {
@@ -102,7 +99,7 @@ export default function LeadsPage() {
               </tr>
             ) : (
               leads.map((lead) => {
-                const statusStyle = getStatusStyle(lead.status);
+                const style = statusStyles[lead.status] || statusStyles["New"];
                 return (
                   <tr key={lead.id} style={{ borderBottom: "1px solid #F3F4F6", transition: "background-color 0.2s" }}>
                     <td style={{ padding: "16px", fontWeight: 600, color: "var(--secondary)" }}>{lead.name}</td>
@@ -135,8 +132,8 @@ export default function LeadsPage() {
                           fontWeight: 600,
                           cursor: "pointer",
                           outline: "none",
-                          backgroundColor: statusStyle.bg,
-                          color: statusStyle.color
+                          backgroundColor: style.bg,
+                          color: style.color
                         }}
                       >
                         <option value="New">New</option>

@@ -16,12 +16,13 @@ export interface Lead {
   company: string;
   website?: string;
   message: string;
-  status: "New" | "Contacted" | "Closed";
+  serviceInterest?: string;
+  status: "New" | "Audit Sent" | "Call Booked" | "Proposal Sent" | "Won" | "Lost";
   createdAt?: any;
   
-  // Audit Fields
   auditStatus?: "Not Started" | "Drafting" | "Sent";
   auditText?: string;
+  proposalLink?: string; 
 }
 
 export interface CaseStudy {
@@ -52,47 +53,9 @@ export interface Booking {
   createdAt?: any;
 }
 
-// src/lib/types.ts
-
-// ... existing interfaces ...
-
-export interface Lead {
-  id?: string;
-  name: string;
-  email: string;
-  company: string;
-  website?: string;
-  message: string;
-  serviceInterest?: string; // <-- ADD THIS
-  status: "New" | "Contacted" | "Closed";
-  createdAt?: any;
-  auditStatus?: "Not Started" | "Drafting" | "Sent";
-  auditText?: string;
-}
-
-// src/lib/types.ts
-// ... (keep everything else)
-
 export interface BlockedSlot {
   id?: string;
   date: string;
-  time: string; // "All Day" or specific time like "10:00 AM"
+  time: string;
   createdAt?: any;
-}
-
-
-export interface Lead {
-  id?: string;
-  name: string;
-  email: string;
-  company: string;
-  website?: string;
-  message: string;
-  serviceInterest?: string;
-  status: "New" | "Audit Sent" | "Call Booked" | "Proposal Sent" | "Won" | "Lost";
-  createdAt?: any;
-  
-  auditStatus?: "Not Started" | "Drafting" | "Sent";
-  auditText?: string;
-  proposalLink?: string; // <-- NEW
 }
